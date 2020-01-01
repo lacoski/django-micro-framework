@@ -1,0 +1,13 @@
+*.pyc
+*.db
+*~
+.*
+
+*/env/
+/env/
+*/venv/
+/venv/
+
+!.gitignore
+!.travis.yml
+!.isort.cfg
