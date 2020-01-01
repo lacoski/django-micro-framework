@@ -47,6 +47,7 @@ setuptools.setup(
     name="djangomicroframework",
     # version 
     version="0.0.1",
+    license='MIT',
     author="thanhnb",
     author_email="bathanhtlu@gmail.com",
     install_requires=[
