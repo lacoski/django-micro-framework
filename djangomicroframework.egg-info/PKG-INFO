@@ -1,0 +1,15 @@
+Metadata-Version: 1.2
+Name: djangomicroframework
+Version: 0.0.1
+Summary: Micro framework for Django
+Home-page: https://github.com/lacoski
+Author: thanhnb
+Author-email: bathanhtlu@gmail.com
+License: UNKNOWN
+Description: # Django Micro framework
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.6
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6,<3.9
