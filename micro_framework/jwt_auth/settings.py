@@ -10,6 +10,7 @@ from micro_framework.jwt_auth.utils import format_lazy
 USER_SETTINGS = getattr(settings, 'PORTAL_JWT', None)
 
 DEFAULTS = {
+    'SERVICE_NAME': 'Default',
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,

@@ -1,4 +1,9 @@
-from micro_framework.jwt_auth.utils import roles_to_policies
+from django.utils.translation import ugettext_lazy as _
+
+from micro_framework.jwt_auth.exceptions import InvalidToken
+from micro_framework.jwt_auth.models import Policy
+from micro_framework.jwt_auth.settings import api_settings
+
 
 def match_rules(rules, app, action):
     """
@@ -30,3 +35,23 @@ def action_allowed_user(user, permission):
         match_rules(policy.rules, permission.app, permission.action)
         for policy in roles_to_policies(user)
     )
+
+def roles_to_policies(user):
+    list_role = []
+    for role_user in user.roles_list:
+        service_name, role_name = role_user.split(':')
+        if service_name == api_settings.SERVICE_NAME:
+            list_role.append(role_name)
+    list_policy = []
+    for role_name in list_role:
+        try:
+            user_policy = Policy.objects.get(name=role_name)
+            list_policy.append(user_policy)
+        except Exception as ex:
+            messages = []
+            messages.append({'message': str(ex)})
+            raise InvalidToken({
+                'detail': _('Given token not valid for any token type'),
+                'messages': messages,
+            })
+    return list_policy

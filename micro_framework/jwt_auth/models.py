@@ -4,22 +4,10 @@ from django.db import models
 from django.db.models.manager import EmptyManager
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+
 from micro_framework.jwt_auth.compat import CallableFalse, CallableTrue
 from micro_framework.jwt_auth.settings import api_settings
 
-
-class Policy(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    rules = models.TextField()
-    notes = models.TextField(blank=True)
-
-    class Meta:
-        db_table = 'policies'
-        verbose_name = _("Policy")
-        verbose_name_plural = _("Policies")
-
-    def __str__(self):
-        return self.name
 
 class TokenUser:
     """
@@ -121,3 +109,16 @@ class TokenUser:
 
     def get_username(self):
         return self.username
+
+class Policy(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    rules = models.TextField()
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        db_table = 'policies'
+        verbose_name = _("Policy")
+        verbose_name_plural = _("Policies")
+
+    def __str__(self):
+        return self.name
