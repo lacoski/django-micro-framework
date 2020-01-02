@@ -7,7 +7,7 @@ from rest_framework.settings import APISettings as _APISettings
 
 from micro_framework.jwt_auth.utils import format_lazy
 
-USER_SETTINGS = getattr(settings, 'PORTAL_JWT', None)
+USER_SETTINGS = getattr(settings, 'MICRO_FRAMEWORK', None)
 
 DEFAULTS = {
     'SERVICE_NAME': 'Default',
@@ -66,7 +66,7 @@ def reload_api_settings(*args, **kwargs):  # pragma: no cover
 
     setting, value = kwargs['setting'], kwargs['value']
 
-    if setting == 'PORTAL_JWT':
+    if setting == 'MICRO_FRAMEWORK':
         api_settings = APISettings(value, DEFAULTS, IMPORT_STRINGS)
 
 
