@@ -19,8 +19,8 @@ class Command(BaseCommand):
             Policy.objects.get(name=policy_name).delete()
         except Exception as ex:
             raise CommandError(
-                'Cannot delete the Policy {} '.format(
+                'Cannot delete the Policy ({}) '.format(
                     policy_name)
             )
         self.stdout.write(
-            'Delete policy {}'.format(policy_name))
+            'Delete Policy ({})'.format(policy_name))

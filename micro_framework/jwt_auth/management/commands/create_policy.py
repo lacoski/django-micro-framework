@@ -26,4 +26,4 @@ class Command(BaseCommand):
                     policy_name)
             )
         self.stdout.write(
-            'Created policy {} with rule {}'.format(policy_name, policy_rule))
+            'Created Policy ({}) with rule ({})'.format(policy_name, policy_rule))

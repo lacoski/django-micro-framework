@@ -1,7 +1,10 @@
 """
 MIXINS
 """
+from django.utils.translation import ugettext_lazy as _
+
 from micro_framework.jwt_auth import acls
+
 
 class PermissionRequiredMixin:
 
@@ -20,5 +23,5 @@ class PermissionRequiredMixin:
             
             if not acls.action_allowed(request, self.permission):
                 self.permission_denied(
-                    request, message='Bạn không có quyền thực hiện thao tác này'
+                    request, message=_('You do not have permission to perform this action.')
                 )

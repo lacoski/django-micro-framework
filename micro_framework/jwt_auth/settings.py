@@ -29,11 +29,7 @@ DEFAULTS = {
     'AUTH_TOKEN_CLASSES': ('micro_framework.jwt_auth.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
 
-    'JTI_CLAIM': 'jti',
-
-    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+    'JTI_CLAIM': 'jti'
 }
 
 IMPORT_STRINGS = (
@@ -50,7 +46,7 @@ REMOVED_SETTINGS = (
 
 class APISettings(_APISettings):  # pragma: no cover
     def __check_user_settings(self, user_settings):
-        SETTINGS_DOC = 'https://github.com/davesque/django-rest-framework-simplejwt#settings'
+        SETTINGS_DOC = 'https://github.com/lacoski/django-micro-framework'
 
         for setting in REMOVED_SETTINGS:
             if setting in user_settings:
