@@ -5,16 +5,16 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="djangomicroframework",
-    version="0.0.1a3",
+    version="0.0.2a1",
     license='MIT',
     author="thanhnb",
     author_email="bathanhtlu@gmail.com",
     install_requires=[
-        'django',
-        'djangorestframework',
-        'pyjwt',
-        'redis',
-        'hiredis'
+        'django>=2.0',
+        'djangorestframework>=3.11',
+        'pyjwt>=1.7',
+        'redis>=3.3.11',
+        'hiredis>=1.0.1'
     ],
     python_requires='>=3.6,<3.7',
     description="Micro framework for Django",
