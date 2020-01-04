@@ -29,7 +29,26 @@ DEFAULTS = {
     'AUTH_TOKEN_CLASSES': ('micro_framework.jwt_auth.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
 
-    'JTI_CLAIM': 'jti'
+    'JTI_CLAIM': 'jti',
+
+    # Custom payload Token
+    'ADD_USER_IP_CLAIM': False,
+    'USER_IP_CLAIM': 'user_ip',
+
+    'ADD_USER_AGENT_CLAIM': False,
+    'USER_AGENT_CLAIM': 'user_agent',
+
+    'VALIDATE_SOURCE_IP': False,
+    'HEADER_IP_REMOTE': ['HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'],
+    
+
+    # Redis backend
+    'REDIS_ENABLE': False,
+    'REDIS_HOST': 'localhost',
+    'REDIS_PORT': 6379,
+    'REDIS_PASSWORD': None,
+    'REDIS_DB': 0,
+    'REDIS_EXPIRE_TOKEN': False,
 }
 
 IMPORT_STRINGS = (

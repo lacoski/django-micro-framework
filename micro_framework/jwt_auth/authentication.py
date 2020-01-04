@@ -3,7 +3,7 @@ from rest_framework import HTTP_HEADER_ENCODING, authentication
 
 from micro_framework.jwt_auth.exceptions import AuthenticationFailed, InvalidToken, TokenError
 from micro_framework.jwt_auth.models import TokenUser
-from micro_framework.jwt_auth.settings import api_settings
+from micro_framework.settings import api_settings
 from micro_framework.jwt_auth.state import User
 
 AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES

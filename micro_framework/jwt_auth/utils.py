@@ -5,7 +5,6 @@ from django.conf import settings
 from django.utils.functional import lazy
 from django.utils.timezone import is_naive, make_aware, utc
 
-
 class AclPermission(object):
     def __init__(self, app, action):
         self.app = app

@@ -2,9 +2,12 @@ from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, serializers
 
-from micro_framework.jwt_auth.settings import api_settings
+from micro_framework.helpers import (get_real_ip_from_header_meta,
+                                     get_user_agent_from_header_meta)
+from micro_framework.jwt_auth.exceptions import InvalidUser
 from micro_framework.jwt_auth.state import User
 from micro_framework.jwt_auth.tokens import RefreshToken, UntypedToken
+from micro_framework.settings import api_settings
 
 
 class PasswordField(serializers.CharField):
@@ -58,19 +61,24 @@ class TokenObtainSerializer(serializers.Serializer):
         return {}
 
     @classmethod
-    def get_token(cls, user):
+    def get_token(cls, user, **kwargs):
         raise NotImplementedError('Must implement `get_token` method for `TokenObtainSerializer` subclasses')
 
 
 class TokenObtainPairSerializer(TokenObtainSerializer):
     @classmethod
-    def get_token(cls, user):
-        return RefreshToken.for_user(user)
+    def get_token(cls, user, **kwargs):
+        request = kwargs.pop('request')
+        if api_settings.ADD_USER_IP_CLAIM:
+            kwargs[api_settings.USER_IP_CLAIM] = get_real_ip_from_header_meta(request.META)
+        if api_settings.ADD_USER_AGENT_CLAIM:
+            kwargs[api_settings.USER_AGENT_CLAIM] = get_user_agent_from_header_meta(request.META)
+        return RefreshToken.for_user(user, **kwargs)
 
     def validate(self, attrs):
         data = super().validate(attrs)
-
-        refresh = self.get_token(self.user)
+        request = self.context['request']
+        refresh = self.get_token(self.user, request=request)
 
         data['refresh'] = str(refresh)
         data['access'] = str(refresh.access_token)
@@ -78,11 +86,36 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
         return data
 
 
-class TokenRefreshSerializer(serializers.Serializer):
+class VerificationBaseSerializer(serializers.Serializer):
+    """
+    Abstract serializer used for verifying and refreshing JWTs.
+    """
+
+    def validate(self, attrs):
+        msg = 'Please define a validate method.'
+        raise NotImplementedError(msg)
+
+    def _check_user(self, refresh_token):
+        user_id = refresh_token[api_settings.USER_ID_CLAIM]
+
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            msg = _("User doesn't exist.")
+            raise InvalidUser(msg)
+
+        if not user.is_active:
+            msg = _('User account is disabled.')
+            raise InvalidUser(msg)
+
+        return user
+
+class TokenRefreshSerializer(VerificationBaseSerializer):
     refresh = serializers.CharField()
 
     def validate(self, attrs):
         refresh = RefreshToken(attrs['refresh'])
+        self._check_user(refresh)
 
         data = {'access': str(refresh.access_token)}
 

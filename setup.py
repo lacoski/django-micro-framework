@@ -13,6 +13,8 @@ setuptools.setup(
         'django',
         'djangorestframework',
         'pyjwt',
+        'redis',
+        'hiredis'
     ],
     python_requires='>=3.6,<3.7',
     description="Micro framework for Django",

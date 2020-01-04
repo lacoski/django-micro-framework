@@ -2,7 +2,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from micro_framework.jwt_auth.exceptions import InvalidToken
 from micro_framework.jwt_auth.models import Policy
-from micro_framework.jwt_auth.settings import api_settings
+from micro_framework.settings import api_settings
 
 
 def match_rules(rules, app, action):

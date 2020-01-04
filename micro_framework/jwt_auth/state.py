@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 
 from micro_framework.jwt_auth.backends import TokenBackend
-from micro_framework.jwt_auth.settings import api_settings
+from micro_framework.settings import api_settings
 
 User = get_user_model()
 token_backend = TokenBackend(api_settings.ALGORITHM, api_settings.SIGNING_KEY,

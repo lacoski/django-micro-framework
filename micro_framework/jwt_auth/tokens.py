@@ -1,13 +1,15 @@
 from datetime import timedelta
 from uuid import uuid4
 
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from micro_framework.jwt_auth.exceptions import TokenBackendError, TokenError
-from micro_framework.jwt_auth.settings import api_settings
-from micro_framework.jwt_auth.utils import (
-    aware_utcnow, datetime_from_epoch, datetime_to_epoch, format_lazy,
-)
+from micro_framework.jwt_auth.redis_token.token_manager import \
+    RedisTokenManager
+from micro_framework.jwt_auth.utils import (aware_utcnow, datetime_from_epoch,
+                                            datetime_to_epoch, format_lazy)
+from micro_framework.settings import api_settings
 
 
 class Token:
@@ -151,7 +153,7 @@ class Token:
             raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
 
     @classmethod
-    def for_user(cls, user):
+    def for_user(cls, user, **kwargs):
         """
         Returns an authorization token for the given user that will be provided
         after authenticating the user's credentials.
@@ -162,11 +164,42 @@ class Token:
 
         token = cls()
         token[api_settings.USER_ID_CLAIM] = user_id
+        for key, value in kwargs.items():
+            token[key] = value
 
         return token
 
 
-class RefreshToken(Token):
+class RedisTokenMixin:
+    if 'micro_framework.jwt_auth.redis_token' in settings.INSTALLED_APPS:
+        def verify(self, *args, **kwargs):
+            self.check_redis_token()
+            super().verify(*args, **kwargs)
+
+        def check_redis_token(self):
+            jti = self.payload[api_settings.JTI_CLAIM]
+            redis_tokens = RedisTokenManager()
+            try:
+                redis_user_token = redis_tokens.get(jti)
+            except Exception as ex:
+                raise TokenError(_('Token is invalid'))
+        
+        @classmethod
+        def for_user(cls, user, **kwargs):
+            """
+            Adds this token to the redis token list.
+            """
+            token = super().for_user(user, **kwargs)
+            user_id = user.id
+            jti = token[api_settings.JTI_CLAIM]
+            redis_tokens = RedisTokenManager()
+            try:
+                redis_tokens.create(token_id=jti, user_id=user_id, payload=token.payload)
+            except Exception as ex:
+                raise TokenError(_("Something wrong with Token Storage Backend"))
+            return token
+
+class RefreshToken(RedisTokenMixin, Token):
     token_type = 'refresh'
     lifetime = api_settings.REFRESH_TOKEN_LIFETIME
     no_copy_claims = (
@@ -221,3 +254,5 @@ class UntypedToken(Token):
         properties which do not relate to the token's intended use.
         """
         pass
+
+

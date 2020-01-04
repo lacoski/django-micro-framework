@@ -62,3 +62,7 @@ class TokenVerifyView(TokenViewBase):
 
 
 token_verify = TokenVerifyView.as_view()
+
+
+class RedisTokenObtainPairView(TokenViewBase):
+    serializer_class = serializers.TokenObtainPairSerializer

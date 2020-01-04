@@ -6,7 +6,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from micro_framework.jwt_auth.compat import CallableFalse, CallableTrue
-from micro_framework.jwt_auth.settings import api_settings
+from micro_framework.settings import api_settings
 
 
 class TokenUser:
