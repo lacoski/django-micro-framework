@@ -28,12 +28,45 @@ REST_FRAMEWORK = {
 
 from datetime import timedelta
 MICRO_FRAMEWORK = {
-    'SERVICE_NAME': 'Demo',
+    'SERVICE_NAME': 'Default',
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+
     'ALGORITHM': 'HS256',
-    'ISSUER': "TestTest123",
-    'SIGNING_KEY': "TestTest123321",
+    'SIGNING_KEY': settings.SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+
+    'AUTH_TOKEN_CLASSES': ('micro_framework.jwt_auth.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+
+    # Custom payload Token
+    'ADD_USER_IP_CLAIM': False,
+    'USER_IP_CLAIM': 'user_ip',
+
+    'ADD_USER_AGENT_CLAIM': False,
+    'USER_AGENT_CLAIM': 'user_agent',
+
+    'VALIDATE_SOURCE_IP': False,
+    'HEADER_IP_REMOTE': ['HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'],
+    
+
+    # Redis backend
+    'REDIS_ENABLE': False,
+    'REDIS_HOST': 'localhost',
+    'REDIS_PORT': 6379,
+    'REDIS_PASSWORD': None,
+    'REDIS_DB': 0,
+    'REDIS_EXPIRE_TOKEN': False,
 }
 ```
 

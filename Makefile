@@ -16,7 +16,7 @@ clean-pyc:
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 
-release: clean
+release:
 	twine upload dist/*
 
 dist: clean
