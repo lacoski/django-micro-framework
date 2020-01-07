@@ -22,13 +22,14 @@ class RedisTokenManager:
     Redis Token Manager
     """
     token_type = 'base'
+    token_expire = api_settings.REFRESH_TOKEN_LIFETIME
 
     def create(self, token_id, user_id, payload):
         redis_backend = redis_client()
         redis_token_key = get_token_key(token_id, user_id, self.token_type)
         redis_timeout = None
         if api_settings.REDIS_EXPIRE_TOKEN:
-            redis_timeout = int(api_settings.REFRESH_TOKEN_LIFETIME.total_seconds())
+            redis_timeout = int(self.token_expire.total_seconds())
         redis_backend.set(
             redis_token_key,
             data_to_json(payload),
@@ -69,11 +70,12 @@ class RedisTokenManager:
 
 class RedisAccessTokenManager(RedisTokenManager):
     token_type = TOKEN_ACCESS_KEY
+    token_expire = api_settings.ACCESS_TOKEN_LIFETIME
 
 
 class RedisRefreshTokenManager(RedisTokenManager):
     token_type = TOKEN_REFRESH_KEY
-
+    token_expire = api_settings.REFRESH_TOKEN_LIFETIME
 
 class RedisToken:
     """
