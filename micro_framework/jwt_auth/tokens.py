@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from micro_framework.jwt_auth.exceptions import TokenBackendError, TokenError
 from micro_framework.jwt_auth.redis_token.token_manager import \
-    RedisTokenManager
+    RedisRefreshTokenManager, RedisAccessTokenManager
 from micro_framework.jwt_auth.utils import (aware_utcnow, datetime_from_epoch,
                                             datetime_to_epoch, format_lazy)
 from micro_framework.settings import api_settings
@@ -170,7 +170,7 @@ class Token:
         return token
 
 
-class RedisTokenMixin:
+class RedisRefreshTokenMixin:
     if 'micro_framework.jwt_auth.redis_token' in settings.INSTALLED_APPS:
         def verify(self, *args, **kwargs):
             self.check_redis_token()
@@ -178,12 +178,12 @@ class RedisTokenMixin:
 
         def check_redis_token(self):
             jti = self.payload[api_settings.JTI_CLAIM]
-            redis_tokens = RedisTokenManager()
+            redis_refresh_tokens = RedisRefreshTokenManager()
             try:
-                redis_user_token = redis_tokens.get(jti)
+                redis_user_token = redis_refresh_tokens.get(jti)
             except Exception as ex:
                 raise TokenError(_('Token is invalid'))
-        
+
         @classmethod
         def for_user(cls, user, **kwargs):
             """
@@ -192,14 +192,15 @@ class RedisTokenMixin:
             token = super().for_user(user, **kwargs)
             user_id = user.id
             jti = token[api_settings.JTI_CLAIM]
-            redis_tokens = RedisTokenManager()
+            redis_refresh_tokens = RedisRefreshTokenManager()
             try:
-                redis_tokens.create(token_id=jti, user_id=user_id, payload=token.payload)
+                redis_refresh_tokens.create(token_id=jti, user_id=user_id, payload=token.payload)
             except Exception as ex:
                 raise TokenError(_("Something wrong with Token Storage Backend"))
             return token
 
-class RefreshToken(RedisTokenMixin, Token):
+
+class RefreshToken(RedisRefreshTokenMixin, Token):
     token_type = 'refresh'
     lifetime = api_settings.REFRESH_TOKEN_LIFETIME
     no_copy_claims = (
@@ -235,10 +236,30 @@ class RefreshToken(RedisTokenMixin, Token):
                 continue
             access[claim] = value
 
+        if 'micro_framework.jwt_auth.redis_token' in settings.INSTALLED_APPS:
+            redis_access_tokens = RedisAccessTokenManager()
+            user_id = access[api_settings.USER_ID_CLAIM]
+            jti = access[api_settings.JTI_CLAIM]
+            redis_access_tokens.create(token_id=jti, user_id=user_id, payload=access.payload)
+
         return access
 
+class RedisAccessTokenMixin:
+    if 'micro_framework.jwt_auth.redis_token' in settings.INSTALLED_APPS:
+        def verify(self, *args, **kwargs):
+            self.check_redis_token()
+            super().verify(*args, **kwargs)
 
-class AccessToken(Token):
+        def check_redis_token(self):
+            jti = self.payload[api_settings.JTI_CLAIM]
+            redis_access_tokens = RedisAccessTokenManager()
+            try:
+                redis_access_user_token = redis_access_tokens.get(jti)
+            except Exception as ex:
+                raise TokenError(_('Token is invalid'))
+
+
+class AccessToken(RedisAccessTokenMixin, Token):
     token_type = 'access'
     lifetime = api_settings.ACCESS_TOKEN_LIFETIME
 

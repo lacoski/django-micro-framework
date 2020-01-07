@@ -2,21 +2,30 @@ from django.utils.functional import cached_property
 
 from micro_framework.settings import api_settings
 from micro_framework.store.redis_backend.client import redis_client
-from micro_framework.store.redis_backend.utils import data_to_json, redis_to_data
+from micro_framework.store.redis_backend.utils import (data_to_json,
+                                                       redis_to_data)
 
-# Cấu trúc tokens:<token_id>:<user_id>
-TOKEN_KEY = "tokens:{}:{}"
+TOKEN_ACCESS_KEY = 'access'
+TOKEN_REFRESH_KEY = 'refresh'
+TOKEN_TYPE = [
+    TOKEN_ACCESS_KEY,
+    TOKEN_REFRESH_KEY
+]
+# Cấu trúc tokens:<token_id>:<user_id>:<token_type>
+TOKEN_KEY = "tokens:{}:{}:{}"
 
-def get_token_key(token_id, user_id):
-    return TOKEN_KEY.format(token_id, user_id)
+def get_token_key(token_id, user_id, token_type=TOKEN_REFRESH_KEY):
+    return TOKEN_KEY.format(token_id, user_id, token_type)
 
 class RedisTokenManager:
     """
     Redis Token Manager
     """
+    token_type = 'base'
+
     def create(self, token_id, user_id, payload):
         redis_backend = redis_client()
-        redis_token_key = get_token_key(token_id, user_id)
+        redis_token_key = get_token_key(token_id, user_id, self.token_type)
         redis_timeout = None
         if api_settings.REDIS_EXPIRE_TOKEN:
             redis_timeout = int(api_settings.REFRESH_TOKEN_LIFETIME.total_seconds())
@@ -31,7 +40,7 @@ class RedisTokenManager:
         redis_backend = redis_client()
         if not user_id:
             user_id = '*'
-        list_token_by_user_id = redis_backend.keys(get_token_key('*', user_id))
+        list_token_by_user_id = redis_backend.keys(get_token_key('*', user_id, self.token_type))
         list_redis_token = []
         for redis_token_key in list_token_by_user_id:
             redis_token = RedisToken(redis_token_key, redis_backend.get(redis_token_key))
@@ -40,22 +49,31 @@ class RedisTokenManager:
 
     def get(self, token_id):
         redis_backend = redis_client()
-        list_token_by_token_id = redis_backend.keys(get_token_key(token_id, '*'))
+        list_token_by_token_id = redis_backend.keys(get_token_key(token_id, '*', self.token_type))
         if len(list_token_by_token_id) < 1:
             raise ValueError("Token does not exist")
         return RedisToken(list_token_by_token_id[0], redis_backend.get(list_token_by_token_id[0]))
 
     def delete(self, token_id):
         redis_backend = redis_client()
-        list_token_by_token_id = redis_backend.keys(get_token_key(token_id, '*'))
+        list_token_by_token_id = redis_backend.keys(get_token_key(token_id, '*', self.token_type))
         return redis_backend.delete(*list_token_by_token_id)
 
     def delete_all(self):
         redis_backend = redis_client()
-        list_token_by_token_id = redis_backend.keys(get_token_key('*', '*'))
+        list_token_by_token_id = redis_backend.keys(get_token_key('*', '*', self.token_type))
         if len(list_token_by_token_id) > 0:
             return redis_backend.delete(*list_token_by_token_id)
         return 0
+
+
+class RedisAccessTokenManager(RedisTokenManager):
+    token_type = TOKEN_ACCESS_KEY
+
+
+class RedisRefreshTokenManager(RedisTokenManager):
+    token_type = TOKEN_REFRESH_KEY
+
 
 class RedisToken:
     """

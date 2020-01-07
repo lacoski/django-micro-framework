@@ -21,12 +21,18 @@ class TokenUser:
     # User is always active since Simple JWT will never issue a token for an
     # inactive user
     is_active = True
+    default_fields = ['username', 'is_staff', 'is_superuser', 'roles',
+                      'id', 'pk']
 
     _groups = EmptyManager(auth_models.Group)
     _user_permissions = EmptyManager(auth_models.Permission)
 
     def __init__(self, token):
         self.token = token
+
+        for key, value in self.token.payload.items():
+            if key not in self.default_fields:
+                setattr(self, key, value)
 
     def __str__(self):
         return 'TokenUser {}'.format(self.id)
@@ -42,6 +48,10 @@ class TokenUser:
     @cached_property
     def username(self):
         return self.token.get('username', '')
+    
+    @cached_property
+    def email(self):
+        return self.token.get('email', '')
 
     @cached_property
     def is_staff(self):
@@ -50,6 +60,10 @@ class TokenUser:
     @cached_property
     def is_superuser(self):
         return self.token.get('is_superuser', False)
+    
+    @property
+    def roles_list(self):
+        return self.token.get('roles', [])
 
     def __eq__(self, other):
         return self.id == other.id
@@ -75,10 +89,6 @@ class TokenUser:
     @property
     def groups(self):
         return self._groups
-
-    @property
-    def roles_list(self):
-        return self.token.get('roles', [])
 
     @property
     def user_permissions(self):
