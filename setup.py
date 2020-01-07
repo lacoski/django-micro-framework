@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="djangomicroframework",
-    version="0.0.2a3",
+    version="0.0.2a4",
     license='MIT',
     author="thanhnb",
     author_email="bathanhtlu@gmail.com",

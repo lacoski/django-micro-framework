@@ -48,16 +48,16 @@ class RedisTokenManager:
             list_redis_token.append(redis_token)
         return list_redis_token
 
-    def get(self, token_id):
+    def get(self, token_id, user_id='*'):
         redis_backend = redis_client()
-        list_token_by_token_id = redis_backend.keys(get_token_key(token_id, '*', self.token_type))
+        list_token_by_token_id = redis_backend.keys(get_token_key(token_id, user_id, self.token_type))
         if len(list_token_by_token_id) < 1:
             raise ValueError("Token does not exist")
         return RedisToken(list_token_by_token_id[0], redis_backend.get(list_token_by_token_id[0]))
 
-    def delete(self, token_id):
+    def delete(self, token_id, user_id='*'):
         redis_backend = redis_client()
-        list_token_by_token_id = redis_backend.keys(get_token_key(token_id, '*', self.token_type))
+        list_token_by_token_id = redis_backend.keys(get_token_key(token_id, user_id, self.token_type))
         return redis_backend.delete(*list_token_by_token_id)
 
     def delete_all(self):
