@@ -60,9 +60,9 @@ class RedisTokenManager:
         list_token_by_token_id = redis_backend.keys(get_token_key(token_id, user_id, self.token_type))
         return redis_backend.delete(*list_token_by_token_id)
 
-    def delete_all(self):
+    def delete_all(self, user_id='*'):
         redis_backend = redis_client()
-        list_token_by_token_id = redis_backend.keys(get_token_key('*', '*', self.token_type))
+        list_token_by_token_id = redis_backend.keys(get_token_key('*', user_id, self.token_type))
         if len(list_token_by_token_id) > 0:
             return redis_backend.delete(*list_token_by_token_id)
         return 0
